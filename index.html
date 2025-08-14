@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Expirace</title>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+  />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <h1>Expirace</h1>
+    <img src="logo.png" alt="Logo" class="logo" />
+  </div>
+</header>
+
+<div id="store-selector">
+  <label for="store-id">Číslo prodejny</label>
+  <input type="text" id="store-id" placeholder="Zadejte číslo prodejny" />
+  <button id="save-store-id">Uložit</button>
+  <div id="store-message"></div>
+</div>
+
+<div>
+  <input type="text" id="search" placeholder="Vyhledávání podle kódu nebo názvu..." />
+</div>
+
+<div id="categories">
+  <button class="category-button" data-category="pes">
+    <i class="fas fa-paw"></i>
+    <span>Pes</span>
+  </button>
+  <button class="category-button" data-category="kocka">
+    <i class="fas fa-cat"></i>
+    <span>Kočka</span>
+  </button>
+  <button class="category-button" data-category="hlodavci">
+    <img src="images/rabbit.png" alt="Hlodavci" />
+    <span>Hlodavci</span>
+  </button>
+  <button class="category-button" data-category="ptaci">
+    <i class="fas fa-dove"></i>
+    <span>Ptáci</span>
+  </button>
+  <button class="category-button" data-category="akvaristika">
+    <i class="fas fa-fish"></i>
+    <span>Akvaristika</span>
+  </button>
+  <button class="category-button" data-category="teraristika">
+    <i class="fas fa-spider"></i>
+    <span>Teraristika</span>
+  </button>
+  <button class="category-button" data-category="pokladna">
+    <i class="fas fa-box-open"></i>
+    <span>Pokladna</span>
+  </button>
+</div>
+
+<div id="container"></div>
+
+<script src="script.js"></script>
+<script>
+  const categoryButtons = document.querySelectorAll('.category-button');
+  let activeCategory = null;
+
+  categoryButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      categoryButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory = btn.dataset.category;
+      render(activeCategory); // vykreslí tabulku jen pro danou kategorii
+    });
+  });
+
+  // Uložená prodejna
+  const storeInput = document.getElementById('store-id');
+  const saveBtn = document.getElementById('save-store-id');
+  const storeMessage = document.getElementById('store-message');
+
+  const savedStoreId = localStorage.getItem('storeId');
+  if (savedStoreId) {
+    storeInput.value = savedStoreId;
+    storeMessage.textContent = `Prodejna: ${savedStoreId}`;
+  }
+
+  saveBtn.addEventListener('click', () => {
+    const storeId = storeInput.value.trim();
+    if (storeId) {
+      localStorage.setItem('storeId', storeId);
+      storeMessage.textContent = `Prodejna: ${storeId}`;
+    }
+  });
+</script>
+
+</body>
+</html>

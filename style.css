@@ -1,0 +1,219 @@
+/* Reset okrajů a paddingů */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #fff8e1;
+  padding: 20px;
+  text-align: center;
+  color: #333;
+}
+
+/* HLAVIČKA */
+header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.header-content h1 {
+  font-size: 25px;
+  margin: 0;
+}
+
+.logo {
+  height: 70px;
+  width: 70px;
+}
+
+/* STORE SELECTOR */
+#store-selector {
+  margin-bottom: 15px;
+}
+
+#store-id {
+  padding: 6px 8px;
+  font-size: 16px;
+  width: 180px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-left: 10px;
+}
+
+#save-store-id {
+  background-color: #ffcc00;
+  border: none;
+  padding: 7px 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 12px;
+  margin-left: 10px;
+  transition: background-color 0.2s ease;
+}
+
+#save-store-id:hover {
+  background-color: #ffb300;
+}
+
+#store-message {
+  color: green;
+  margin-top: 5px;
+}
+
+/* VYHLEDÁVÁNÍ */
+#search {
+  padding: 10px;
+  width: 320px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-bottom: 20px;
+}
+
+/* KATEGORIE */
+#categories {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.category-button {
+  background: #ffcc00;
+  border: none;
+  cursor: pointer;
+  border-radius: 12px;
+  font-weight: bold;
+  color: #000;
+  transition: background-color 0.3s ease;
+  user-select: none;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+
+  padding: 10px;
+  width: 90px;
+  height: 90px;
+  box-sizing: border-box;
+}
+
+.category-button img,
+.category-button i {
+  font-size: 32px;
+  max-width: 40px;
+  max-height: 40px;
+}
+
+.category-button span {
+  font-size: 14px;
+  line-height: 1;
+  text-align: center;
+}
+
+.category-button:hover {
+  background-color: #ffb300;
+}
+
+.category-button.active {
+  background-color: #d39e00;
+  box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.2);
+  color: black;
+}
+
+/* SPECIFICKÉ PRO HLODAVCE (obr. králíka) */
+.category-button[data-category="hlodavci"] img {
+  height: 31px; /* zmenšený obrázek */
+  width: auto;
+  margin-bottom: 6px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* KONTEJNER PRO PRODUKTY */
+#container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 15px;
+}
+
+/* TABULKA EXPIRACE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+th, td {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  text-align: center;
+  font-size: 13px;
+}
+
+th {
+  background-color: #ffecb3; /* jemně světlejší žlutá */
+  font-weight: bold;
+}
+
+td {
+  background-color: #fff8e1;
+}
+
+/* Rychlá úprava scrollbarů (pouze kosmetika) */
+#container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+#container::-webkit-scrollbar-thumb {
+  background-color: #ffcc00;
+  border-radius: 3px;
+}
+
+.exp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid #ddd;
+  background-color: #fff8e1;
+}
+
+.exp-row input {
+  width: 80px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.exp-row .delete-btn {
+  cursor: pointer;
+  font-size: 16px;
+  color: #ff0000;
+  border: none;
+  background: none;
+}
+
+.category-button.active {
+  background-color: #ffb300; /* tmavší žlutá */
+  color: black;
+  font-weight: bold;
+}
+
+.exp-row.out-of-stock {
+  opacity: 0.5; /* řádek vyprodaný */
+}
