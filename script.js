@@ -45,6 +45,14 @@ container.style.display = 'none'; // na titulce nic
 
 let currentCategory = null;
 
+// ====== VYHLEDÁVÁNÍ ======
+const searchContainer = document.getElementById('search-container');
+function toggleSearch(show) {
+  searchContainer.style.display = show ? 'block' : 'none';
+}
+// Na startu: zobrazit (jsme na titulní stránce)
+toggleSearch(true);
+
 const categoryButtons = document.querySelectorAll('.category-button');
 categoryButtons.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -54,6 +62,9 @@ categoryButtons.forEach(btn => {
 
     currentCategory = btn.dataset.category;
     renderCategory(currentCategory);
+
+    // po kliknutí na kategorii vyhledávání pryč
+    toggleSearch(false);
   });
 });
 
@@ -154,8 +165,10 @@ function createRow(tbody, isEmpty = true) {
   const row = document.createElement('tr');
   row.innerHTML = `
     <td style="border:1px solid #ccc;text-align:center;">
-      <button class="delete-row" title="Smazat řádek" style="background:none;border:none;color:red;font-size:16px;cursor:pointer;">🗑</button>
-    </td>
+  <button class="delete-row" title="Smazat řádek" style="background:none;border:none;cursor:pointer;padding:0;">
+    <img src="images/kos.png" alt="Smazat" style="width:16px;height:16px;">
+  </button>
+</td>
     <td style="border:1px solid #ccc;padding:4px">
       <input class="kod" type="text" 
         style="width:100%;box-sizing:border-box;font-size:14px;height:32px;padding:4px;">
@@ -303,4 +316,3 @@ function sortCommittedRows(tbody) {
 
   [...committed, ...empty].forEach(r => tbody.appendChild(r));
 }
-
