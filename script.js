@@ -154,16 +154,41 @@ function createRow(tbody, isEmpty = true) {
   const row = document.createElement('tr');
   row.innerHTML = `
     <td style="border:1px solid #ccc;text-align:center;">
-      <button class="delete-row" title="Vyčistit řádek" style="background:none;border:none;color:red;font-size:16px;cursor:pointer;">🗑</button>
+      <button class="delete-row" title="Smazat řádek" style="background:none;border:none;color:red;font-size:16px;cursor:pointer;">🗑</button>
     </td>
-    <td style="border:1px solid #ccc;padding:4px"><input class="kod" type="text" style="width:100%;box-sizing:border-box"></td>
-    <td style="border:1px solid #ccc;padding:4px"><input class="nazev" type="text" style="width:100%;box-sizing:border-box" readonly></td>
-    <td style="border:1px solid #ccc;padding:4px"><input class="pocet" type="number" min="0" style="width:100%;box-sizing:border-box"></td>
-    <td style="border:1px solid #ccc;padding:4px"><input class="expirace" type="date" style="width:100%;box-sizing:border-box"></td>
-    <td style="border:1px solid #ccc;padding:4px"><input class="bez" type="number" min="0" style="width:100%;box-sizing:border-box"></td>
-    <td style="border:1px solid #ccc;padding:4px"><input class="s30" type="number" min="0" style="width:100%;box-sizing:border-box"></td>
-    <td style="border:1px solid #ccc;padding:4px"><input class="s50" type="number" min="0" style="width:100%;box-sizing:border-box"></td>
-    <td style="border:1px solid #ccc;padding:4px"><input class="zbyva" type="number" readonly style="width:100%;box-sizing:border-box;background:#f7f7f7"></td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="kod" type="text" 
+        style="width:100%;box-sizing:border-box;font-size:14px;height:32px;padding:4px;">
+    </td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="nazev" type="text" readonly
+        style="width:100%;box-sizing:border-box;font-size:14px;height:32px;padding:4px;">
+    </td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="pocet" type="number" min="0"
+        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+    </td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="expirace" type="date"
+  style="width:100%;box-sizing:border-box;font-size:14px;height:32px;
+         padding:4px;line-height:24px;text-align:center;">
+    </td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="bez" type="number" min="0"
+        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+    </td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="s30" type="number" min="0"
+        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+    </td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="s50" type="number" min="0"
+        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+    </td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="zbyva" type="number" readonly
+        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;background:#f7f7f7;">
+    </td>
   `;
   row.dataset.empty = isEmpty ? 'true' : 'false';
 
@@ -175,7 +200,6 @@ function createRow(tbody, isEmpty = true) {
   const s50Input  = row.querySelector('.s50');
   const zbyvaInput= row.querySelector('.zbyva');
   const delBtn    = row.querySelector('.delete-row');
-
   // doplnění názvu podle kódu
   codeInput.addEventListener('input', () => {
     const code = codeInput.value.trim();
@@ -279,3 +303,4 @@ function sortCommittedRows(tbody) {
 
   [...committed, ...empty].forEach(r => tbody.appendChild(r));
 }
+

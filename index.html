@@ -16,7 +16,8 @@
 <header>
   <div class="header-content">
     <h1>Expirace</h1>
-    <img src="logo.png" alt="Logo" class="logo" />
+    <a href="index.html">
+    <img src="logo.png" alt="Logo" class="logo" style="cursor:pointer;"></a>
   </div>
 </header>
 
@@ -27,7 +28,7 @@
   <div id="store-message"></div>
 </div>
 
-<div>
+<div id="search-container">
   <input type="text" id="search" placeholder="Vyhledávání podle kódu nebo názvu..." />
 </div>
 
@@ -69,14 +70,30 @@
   const categoryButtons = document.querySelectorAll('.category-button');
   let activeCategory = null;
 
-  categoryButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      categoryButtons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeCategory = btn.dataset.category;
-      render(activeCategory); // vykreslí tabulku jen pro danou kategorii
-    });
+  const searchContainer = document.getElementById('search-container');
+
+function showSearchOnHome() {
+  if (!activeCategory) {
+    searchContainer.style.display = "block";
+  } else {
+    searchContainer.style.display = "none";
+  }
+}
+
+// první zobrazení po načtení
+showSearchOnHome();
+
+categoryButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    categoryButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeCategory = btn.dataset.category;
+    render(activeCategory);
+
+    // pokaždé po kliknutí vyhodnotíme
+    showSearchOnHome();
   });
+});
 
   // Uložená prodejna
   const storeInput = document.getElementById('store-id');
