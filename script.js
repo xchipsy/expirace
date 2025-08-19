@@ -184,7 +184,7 @@ function createRow(tbody, isEmpty = true) {
     <td style="border:1px solid #ccc;padding:4px">
       <input class="expirace" type="date"
   style="width:100%;box-sizing:border-box;font-size:14px;height:32px;
-         padding:4px;line-height:24px;text-align:center;">
+         padding:4px;line-height:24px;text-align:center;font-family: 'Arial', sans-serif;">
     </td>
     <td style="border:1px solid #ccc;padding:4px">
       <input class="bez" type="number" min="0"
