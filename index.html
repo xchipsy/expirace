@@ -17,7 +17,8 @@
   <div class="header-content">
     <h1>Expirace</h1>
     <a href="index.html">
-    <img src="logo.png" alt="Logo" class="logo" style="cursor:pointer;"></a>
+      <img src="logo.png" alt="Logo" class="logo" style="cursor:pointer;">
+    </a>
   </div>
 </header>
 
@@ -28,11 +29,35 @@
   <div id="store-message"></div>
 </div>
 
-<div id="search-container">
-  <input type="text" id="search" placeholder="Vyhledávání podle kódu nebo názvu..." />
+<!-- Výběr měsíce a roku -->
+<div id="month-selector" style="margin: 20px 0; text-align:center;">
+  <label for="month">Měsíc: </label>
+  <select id="month">
+    <option value="1">Leden</option>
+    <option value="2">Únor</option>
+    <option value="3">Březen</option>
+    <option value="4">Duben</option>
+    <option value="5">Květen</option>
+    <option value="6">Červen</option>
+    <option value="7">Červenec</option>
+    <option value="8">Srpen</option>
+    <option value="9">Září</option>
+    <option value="10">Říjen</option>
+    <option value="11">Listopad</option>
+    <option value="12">Prosinec</option>
+  </select>
+
+  <label for="year">Rok: </label>
+  <select id="year">
+    <option value="2025">2025</option>
+    <option value="2026">2026</option>
+    <option value="2027">2027</option>
+  </select>
+
+  <button id="select-month">Vybrat</button>
 </div>
 
-<div id="categories">
+<div id="categories" style="margin-bottom: 10px;">
   <button class="category-button" data-category="pes">
     <i class="fas fa-paw"></i>
     <span>Pes</span>
@@ -63,39 +88,62 @@
   </button>
 </div>
 
+<!-- Zvolený měsíc -->
+<div id="selected-month-display" style="text-align:center; font-size:1.4em; font-weight:bold; color:#333; margin-bottom: 20px;"></div>
+
 <div id="container"></div>
 
 <script src="script.js"></script>
 <script>
+  // ==== Nastavení výběru roku ====
+  const yearSelect = document.getElementById('year');
+  const currentYear = new Date().getFullYear();
+  for (let y = currentYear - 1; y <= currentYear + 3; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = y;
+    if (y === currentYear) opt.selected = true;
+    yearSelect.appendChild(opt);
+  }
+
+  // ==== Načíst uložený měsíc ====
+  const monthSelect = document.getElementById('month');
+  const selectMonthBtn = document.getElementById('select-month');
+  const selectedMonthDisplay = document.getElementById('selected-month-display');
+
+  function updateSelectedMonthDisplay() {
+    const savedMonth = localStorage.getItem('selectedMonth');
+    if (savedMonth) {
+      selectedMonthDisplay.textContent = savedMonth;
+    } else {
+      selectedMonthDisplay.textContent = '';
+    }
+  }
+
+  updateSelectedMonthDisplay();
+
+  selectMonthBtn.addEventListener('click', () => {
+    const month = monthSelect.value;
+    const year = yearSelect.value;
+    const formatted = `${month}/${year}`;
+    localStorage.setItem('selectedMonth', formatted);
+    updateSelectedMonthDisplay();
+  });
+
+  // ==== Kategorie ====
   const categoryButtons = document.querySelectorAll('.category-button');
   let activeCategory = null;
 
-  const searchContainer = document.getElementById('search-container');
-
-function showSearchOnHome() {
-  if (!activeCategory) {
-    searchContainer.style.display = "block";
-  } else {
-    searchContainer.style.display = "none";
-  }
-}
-
-// první zobrazení po načtení
-showSearchOnHome();
-
-categoryButtons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    categoryButtons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    activeCategory = btn.dataset.category;
-    render(activeCategory);
-
-    // pokaždé po kliknutí vyhodnotíme
-    showSearchOnHome();
+  categoryButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      categoryButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory = btn.dataset.category;
+      render(activeCategory);
+    });
   });
-});
 
-  // Uložená prodejna
+  // ==== Uložená prodejna ====
   const storeInput = document.getElementById('store-id');
   const saveBtn = document.getElementById('save-store-id');
   const storeMessage = document.getElementById('store-message');
