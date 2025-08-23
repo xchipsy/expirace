@@ -165,54 +165,51 @@ function createRow(tbody, isEmpty = true) {
   const row = document.createElement('tr');
   row.innerHTML = `
     <td style="border:1px solid #ccc;text-align:center;">
-  <button class="delete-row" title="Smazat řádek" style="background:none;border:none;cursor:pointer;padding:0;">
-    <img src="images/kos.png" alt="Smazat" style="width:16px;height:16px;">
-  </button>
-</td>
-    <td style="border:1px solid #ccc;padding:4px">
-      <input class="kod" type="text" 
-        style="width:100%;box-sizing:border-box;font-size:14px;height:32px;padding:4px;">
+      <button class="delete-row" title="Smazat řádek" style="background:none;border:none;cursor:pointer;padding:0;">
+        <img src="images/kos.png" alt="Smazat" style="width:16px;height:16px;">
+      </button>
     </td>
     <td style="border:1px solid #ccc;padding:4px">
-      <input class="nazev" type="text" readonly
-        style="width:100%;box-sizing:border-box;font-size:14px;height:32px;padding:4px;">
+      <input class="kod" type="text" style="width:100%;box-sizing:border-box;font-size:14px;height:32px;padding:4px;">
     </td>
     <td style="border:1px solid #ccc;padding:4px">
-      <input class="pocet" type="number" min="0"
-        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+      <input class="nazev" type="text" readonly style="width:100%;box-sizing:border-box;font-size:14px;height:32px;padding:4px;">
     </td>
     <td style="border:1px solid #ccc;padding:4px">
-      <input class="expirace" type="date"
-  style="width:100%;box-sizing:border-box;font-size:14px;height:32px;
-         padding:4px;line-height:24px;text-align:center;font-family: 'Arial', sans-serif;">
+      <input class="pocet" type="number" min="0" style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
     </td>
     <td style="border:1px solid #ccc;padding:4px">
-      <input class="bez" type="number" min="0"
-        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+      <input class="expirace" type="date" style="width:100%;box-sizing:border-box;font-size:14px;height:32px;padding:4px;line-height:24px;text-align:center;font-family:'Arial', sans-serif;">
     </td>
     <td style="border:1px solid #ccc;padding:4px">
-      <input class="s30" type="number" min="0"
-        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+      <input class="bez" type="number" min="0" style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
     </td>
     <td style="border:1px solid #ccc;padding:4px">
-      <input class="s50" type="number" min="0"
-        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+      <input class="s30" type="number" min="0" style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
     </td>
     <td style="border:1px solid #ccc;padding:4px">
-      <input class="zbyva" type="number" readonly
-        style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;background:#f7f7f7;">
+      <input class="s50" type="number" min="0" style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;">
+    </td>
+    <td style="border:1px solid #ccc;padding:4px">
+      <input class="zbyva" type="number" readonly style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;background:#f7f7f7;">
     </td>
   `;
   row.dataset.empty = isEmpty ? 'true' : 'false';
 
   const codeInput = row.querySelector('.kod');
   const nameInput = row.querySelector('.nazev');
-  const qtyInput  = row.querySelector('.pocet');
-  const bezInput  = row.querySelector('.bez');
-  const s30Input  = row.querySelector('.s30');
-  const s50Input  = row.querySelector('.s50');
-  const zbyvaInput= row.querySelector('.zbyva');
-  const delBtn    = row.querySelector('.delete-row');
+  const qtyInput = row.querySelector('.pocet');
+  const expiraceInput = row.querySelector('.expirace');
+  const bezInput = row.querySelector('.bez');
+  const s30Input = row.querySelector('.s30');
+  const s50Input = row.querySelector('.s50');
+  const zbyvaInput = row.querySelector('.zbyva');
+  const delBtn = row.querySelector('.delete-row');
+
+  function saveIfPossible() {
+    if (currentCategory) saveCategoryData(currentCategory, tbody);
+  }
+
   // doplnění názvu podle kódu
   codeInput.addEventListener('input', () => {
     const code = codeInput.value.trim();
@@ -234,7 +231,7 @@ function createRow(tbody, isEmpty = true) {
     }
   });
 
-  // potvrzení i po opuštění pole kód
+  // potvrzení po opuštění pole kód
   codeInput.addEventListener('blur', () => {
     setTimeout(() => {
       if (codeInput.value.trim() !== '') {
@@ -246,38 +243,41 @@ function createRow(tbody, isEmpty = true) {
     }, 80);
   });
 
-  // přepočet zbývá
+  // přepočet zbývá + uložení
   const recalc = () => {
     const total = Number(qtyInput.value) || 0;
-    const sold  = (Number(bezInput.value) || 0) + (Number(s30Input.value) || 0) + (Number(s50Input.value) || 0);
-    const rest  = total - sold;
+    const sold = (Number(bezInput.value) || 0) + (Number(s30Input.value) || 0) + (Number(s50Input.value) || 0);
+    const rest = total - sold;
     zbyvaInput.value = rest;
     row.style.backgroundColor = rest === 0 ? '#e0e0e0' : '#fff';
     saveIfPossible();
   };
-  [qtyInput, bezInput, s30Input, s50Input].forEach(inp => inp.addEventListener('input', recalc));
 
-  // koš – VYČISTÍ řádek (nikoli odebrání, aby vždy nějaký prázdný zůstal)
+  [qtyInput, bezInput, s30Input, s50Input].forEach(inp => {
+    inp.addEventListener('input', recalc);
+    inp.addEventListener('change', recalc);
+  });
+
+  // *** NOVÉ: uložení při změně expirace ***
+  expiraceInput.addEventListener('change', saveIfPossible);
+
+  // koš – vyčistí řádek
   delBtn.addEventListener('click', () => {
     codeInput.value = '';
     nameInput.value = '';
     qtyInput.value = '';
-    row.querySelector('.expirace').value = '';
+    expiraceInput.value = '';
     bezInput.value = '';
     s30Input.value = '';
     s50Input.value = '';
     zbyvaInput.value = '';
     row.dataset.empty = 'true';
     row.style.backgroundColor = '#fff';
-    sortCommittedRows(tbody);      // prázdné na konec
+    sortCommittedRows(tbody);
     ensureOneEmptyRow(tbody);
     saveIfPossible();
     focusLastEmptyCode(tbody);
   });
-
-  function saveIfPossible() {
-    if (currentCategory) saveCategoryData(currentCategory, tbody);
-  }
 
   tbody.appendChild(row);
   return row;
@@ -315,4 +315,5 @@ function sortCommittedRows(tbody) {
   });
 
   [...committed, ...empty].forEach(r => tbody.appendChild(r));
+
 }
