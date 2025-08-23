@@ -39,35 +39,55 @@ fetch('products.json')
   .then(data => { productList = data; })
   .catch(err => console.error('Chyba při načítání products.json:', err));
 
-// ====== KATEGORIE / TABULKA ======
+// ====== KONTEJNER A KATEGORIE ======
 const container = document.getElementById('container');
 container.style.display = 'none';
-
 let currentCategory = null;
 
-// ====== VYHLEDÁVÁNÍ ======
-const searchContainer = document.getElementById('search-container');
-function toggleSearch(show) {
-  searchContainer.style.display = show ? 'block' : 'none';
-}
-toggleSearch(true);
+// ====== VÝBĚR MĚSÍCE A ROKU ======
+const monthSelect = document.getElementById('month');
+const yearSelect = document.getElementById('year');
+const selectMonthBtn = document.getElementById('select-month');
+const selectedMonthDisplay = document.getElementById('selected-month-display');
 
+function updateSelectedMonthDisplay() {
+  const saved = localStorage.getItem('selectedMonthYear');
+  selectedMonthDisplay.textContent = saved || '';
+}
+updateSelectedMonthDisplay();
+
+selectMonthBtn.addEventListener('click', () => {
+  const month = monthSelect.value;
+  const year = yearSelect.value;
+  if (!month || !year) return;
+  localStorage.setItem('selectedMonthYear', `${month}/${year}`);
+  updateSelectedMonthDisplay();
+  // pokud už byla vybraná kategorie, znovu ji vykreslíme
+  if (currentCategory) renderCategory(currentCategory);
+});
+
+// ====== KATEGORIE ======
 const categoryButtons = document.querySelectorAll('.category-button');
 categoryButtons.forEach(btn => {
   btn.addEventListener('click', () => {
+    const savedMonthYear = localStorage.getItem('selectedMonthYear');
+    if (!savedMonthYear) {
+      alert('Nejdříve zvolte měsíc a rok!');
+      return;
+    }
+
     categoryButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-
     currentCategory = btn.dataset.category;
     renderCategory(currentCategory);
-
-    toggleSearch(false);
   });
 });
 
+// ====== DATOVÉ KLÍČE ======
 function dataKey(category) {
   const storeId = localStorage.getItem('storeId') || 'nostore';
-  return `expirace:${storeId}:${category}`;
+  const monthYear = localStorage.getItem('selectedMonthYear') || 'nomonth';
+  return `expirace:${storeId}:${category}:${monthYear}`;
 }
 
 function loadCategoryData(category) {
@@ -95,6 +115,7 @@ function saveCategoryData(category, tbody) {
   localStorage.setItem(dataKey(category), JSON.stringify(payload));
 }
 
+// ====== VYKRESLENÍ KATEGORIE ======
 function renderCategory(category) {
   container.innerHTML = '';
   container.style.display = 'block';
@@ -108,6 +129,7 @@ function renderCategory(category) {
   table.style.border = '1px solid #ccc';
   table.style.borderRadius = '8px';
 
+  // --- HLAVIČKA TABULKY (původní styl) ---
   table.innerHTML = `
     <thead>
       <tr>
@@ -130,6 +152,7 @@ function renderCategory(category) {
     </thead>
     <tbody></tbody>
   `;
+
   container.appendChild(table);
   const tbody = table.querySelector('tbody');
 
@@ -148,12 +171,12 @@ function renderCategory(category) {
     });
   }
 
-  ensureOneEmptyRow(tbody); // vytvoří nový řádek pro zápis
-  sortCommittedRows(tbody);  // řadí řádky a vloží oddělovač
+  ensureOneEmptyRow(tbody);
+  sortCommittedRows(tbody);
   saveCategoryData(category, tbody);
 }
 
-// ====== CREATE ROW ======
+// ====== CREATE ROW S AUTOMATICKÝM PRÁZDNÝM A ŘAZENÍM ======
 function createRow(tbody, isEmpty = true) {
   const row = document.createElement('tr');
   row.innerHTML = `
@@ -187,6 +210,7 @@ function createRow(tbody, isEmpty = true) {
       <input class="zbyva" type="number" readonly style="width:100%;box-sizing:border-box;text-align:center;font-size:14px;height:32px;padding:4px;background:#f7f7f7;">
     </td>
   `;
+
   row.dataset.empty = isEmpty ? 'true' : 'false';
 
   const codeInput = row.querySelector('.kod');
@@ -203,18 +227,37 @@ function createRow(tbody, isEmpty = true) {
     if (currentCategory) saveCategoryData(currentCategory, tbody);
   }
 
+  function commitRowIfFilled(r) {
+    if (r.dataset.empty === 'false') return;
+    const code = r.querySelector('.kod').value.trim();
+    if (!code) return;
+    r.dataset.empty = 'false';
+  }
+
+  function recalc() {
+    const total = Number(qtyInput.value) || 0;
+    const sold = (Number(bezInput.value) || 0) + (Number(s30Input.value) || 0) + (Number(s50Input.value) || 0);
+    zbyvaInput.value = total - sold;
+    sortCommittedRows(tbody);
+    saveIfPossible();
+  }
+
+  // --- EVENTY ---
   codeInput.addEventListener('input', () => {
     const code = codeInput.value.trim();
-    if (!code) { nameInput.value = ''; saveIfPossible(); return; }
-    const found = productList.find(p => p['Číslo'] === code);
-    nameInput.value = found ? found['Popis'] : '';
+    nameInput.value = code ? (productList.find(p => p['Číslo'] === code)?.['Popis'] || '') : '';
     saveIfPossible();
+
+    // pokud je to poslední řádek, vytvoříme další prázdný pod ním
+    const rows = [...tbody.querySelectorAll('tr')];
+    const lastCommitted = rows.filter(r => r.dataset.empty === 'true').pop();
+    if (lastCommitted === row && code !== '') ensureOneEmptyRow(tbody);
   });
 
-  codeInput.addEventListener('keydown', (e) => {
+  codeInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      commitRow(row);
+      commitRowIfFilled(row);
       ensureOneEmptyRow(tbody);
       sortCommittedRows(tbody);
       saveIfPossible();
@@ -224,36 +267,21 @@ function createRow(tbody, isEmpty = true) {
 
   codeInput.addEventListener('blur', () => {
     setTimeout(() => {
-      if (codeInput.value.trim() !== '') {
-        commitRow(row);
-        ensureOneEmptyRow(tbody);
-        sortCommittedRows(tbody);
-        saveIfPossible();
-      }
-    }, 80);
+      commitRowIfFilled(row);
+      ensureOneEmptyRow(tbody);
+      sortCommittedRows(tbody);
+      saveIfPossible();
+    }, 50);
   });
 
-  const recalc = () => {
-    const total = Number(qtyInput.value) || 0;
-    const sold = (Number(bezInput.value) || 0) + (Number(s30Input.value) || 0) + (Number(s50Input.value) || 0);
-    const rest = total - sold;
-    zbyvaInput.value = rest;
-    sortCommittedRows(tbody);
-    saveIfPossible();
-  };
-  [qtyInput, bezInput, s30Input, s50Input].forEach(inp => inp.addEventListener('input', recalc));
-  [qtyInput, bezInput, s30Input, s50Input].forEach(inp => inp.addEventListener('change', recalc));
+  [qtyInput, bezInput, s30Input, s50Input].forEach(inp => {
+    inp.addEventListener('input', recalc);
+    inp.addEventListener('change', recalc);
+  });
   expiraceInput.addEventListener('change', saveIfPossible);
 
   delBtn.addEventListener('click', () => {
-    codeInput.value = '';
-    nameInput.value = '';
-    qtyInput.value = '';
-    expiraceInput.value = '';
-    bezInput.value = '';
-    s30Input.value = '';
-    s50Input.value = '';
-    zbyvaInput.value = '';
+    [codeInput, nameInput, qtyInput, expiraceInput, bezInput, s30Input, s50Input, zbyvaInput].forEach(i => i.value = '');
     row.dataset.empty = 'true';
     sortCommittedRows(tbody);
     ensureOneEmptyRow(tbody);
@@ -265,23 +293,27 @@ function createRow(tbody, isEmpty = true) {
   return row;
 }
 
-function commitRow(row) {
-  if (row.dataset.empty === 'false') return;
-  const code = row.querySelector('.kod').value.trim();
-  if (!code) return;
-  row.dataset.empty = 'false';
+// ====== ENSURE EMPTY ROW POD POSLEDNÍ VYPLNĚNÝ ======
+function ensureOneEmptyRow(tbody) {
+  const rows = [...tbody.querySelectorAll('tr')];
+  const lastEmpty = rows.reverse().find(r => r.dataset.empty === 'true');
+  if (!lastEmpty) {
+    const newRow = createRow(tbody, true);
+    newRow.dataset.newEntry = 'true';
+  }
 }
 
-// ====== NOVÉ ŘAZENÍ S ODDĚLOVACÍ ČÁROU A PRÁZDNÝM ŘÁDKEM ======
+// ====== SORTOVÁNÍ SE ZBYVÁ 0 A ODDĚLOVAČEM ======
 function sortCommittedRows(tbody) {
   const rows = [...tbody.querySelectorAll('tr')];
+  const emptyRows = rows.filter(r => r.dataset.empty === 'true');
   const committed = rows.filter(r => r.dataset.empty === 'false' && (Number(r.querySelector('.zbyva').value) || 0) > 0);
   const zeros = rows.filter(r => r.dataset.empty === 'false' && (Number(r.querySelector('.zbyva').value) || 0) === 0);
-  const newEntry = rows.find(r => r.dataset.newEntry === 'true');
 
   tbody.innerHTML = '';
 
   committed.forEach(r => tbody.appendChild(r));
+  emptyRows.forEach(r => tbody.appendChild(r));
 
   if (zeros.length) {
     const sepRow = document.createElement('tr');
@@ -292,24 +324,14 @@ function sortCommittedRows(tbody) {
     sepTd.style.height = '5px';
     sepRow.appendChild(sepTd);
     tbody.appendChild(sepRow);
-  }
 
-  if (newEntry) tbody.appendChild(newEntry);
-
-  zeros.forEach(r => tbody.appendChild(r));
-}
-
-function ensureOneEmptyRow(tbody) {
-  const existing = [...tbody.querySelectorAll('tr')].find(r => r.dataset.newEntry === 'true');
-  if (!existing) {
-    const newRow = createRow(tbody, true);
-    newRow.dataset.newEntry = 'true';
+    zeros.forEach(r => tbody.appendChild(r));
   }
 }
 
+// ====== FOCUS NA POSLEDNÍ PRÁZDNÝ KÓD ======
 function focusLastEmptyCode(tbody) {
   const rows = [...tbody.querySelectorAll('tr')];
   const lastEmpty = rows.reverse().find(r => r.dataset.empty === 'true');
   if (lastEmpty) lastEmpty.querySelector('.kod').focus();
 }
-
