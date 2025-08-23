@@ -41,7 +41,7 @@ fetch('products.json')
 
 // ====== KATEGORIE / TABULKA ======
 const container = document.getElementById('container');
-container.style.display = 'none'; // na titulce nic
+container.style.display = 'none';
 
 let currentCategory = null;
 
@@ -50,20 +50,17 @@ const searchContainer = document.getElementById('search-container');
 function toggleSearch(show) {
   searchContainer.style.display = show ? 'block' : 'none';
 }
-// Na startu: zobrazit (jsme na titulní stránce)
 toggleSearch(true);
 
 const categoryButtons = document.querySelectorAll('.category-button');
 categoryButtons.forEach(btn => {
   btn.addEventListener('click', () => {
-    // podbarvení aktivní kategorie
     categoryButtons.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
     currentCategory = btn.dataset.category;
     renderCategory(currentCategory);
 
-    // po kliknutí na kategorii vyhledávání pryč
     toggleSearch(false);
   });
 });
@@ -134,10 +131,8 @@ function renderCategory(category) {
     <tbody></tbody>
   `;
   container.appendChild(table);
-
   const tbody = table.querySelector('tbody');
 
-  // naplnění z localStorage
   const saved = loadCategoryData(category);
   if (saved.length) {
     saved.forEach(obj => {
@@ -150,17 +145,15 @@ function renderCategory(category) {
       r.querySelector('.s30').value = obj.s30 || '';
       r.querySelector('.s50').value = obj.s50 || '';
       r.querySelector('.zbyva').value = obj.zbyva || '';
-      // přepočet barvy
-      const remaining = Number(r.querySelector('.zbyva').value) || 0;
-      r.style.backgroundColor = remaining === 0 ? '#e0e0e0' : '#fff';
     });
-    sortCommittedRows(tbody);
   }
 
-  ensureOneEmptyRow(tbody);
+  ensureOneEmptyRow(tbody); // vytvoří nový řádek pro zápis
+  sortCommittedRows(tbody);  // řadí řádky a vloží oddělovač
   saveCategoryData(category, tbody);
 }
 
+// ====== CREATE ROW ======
 function createRow(tbody, isEmpty = true) {
   const row = document.createElement('tr');
   row.innerHTML = `
@@ -210,7 +203,6 @@ function createRow(tbody, isEmpty = true) {
     if (currentCategory) saveCategoryData(currentCategory, tbody);
   }
 
-  // doplnění názvu podle kódu
   codeInput.addEventListener('input', () => {
     const code = codeInput.value.trim();
     if (!code) { nameInput.value = ''; saveIfPossible(); return; }
@@ -219,11 +211,10 @@ function createRow(tbody, isEmpty = true) {
     saveIfPossible();
   });
 
-  // potvrzení řádku Enterem
   codeInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      commitRow(row, tbody);
+      commitRow(row);
       ensureOneEmptyRow(tbody);
       sortCommittedRows(tbody);
       saveIfPossible();
@@ -231,11 +222,10 @@ function createRow(tbody, isEmpty = true) {
     }
   });
 
-  // potvrzení po opuštění pole kód
   codeInput.addEventListener('blur', () => {
     setTimeout(() => {
       if (codeInput.value.trim() !== '') {
-        commitRow(row, tbody);
+        commitRow(row);
         ensureOneEmptyRow(tbody);
         sortCommittedRows(tbody);
         saveIfPossible();
@@ -243,25 +233,18 @@ function createRow(tbody, isEmpty = true) {
     }, 80);
   });
 
-  // přepočet zbývá + uložení
   const recalc = () => {
     const total = Number(qtyInput.value) || 0;
     const sold = (Number(bezInput.value) || 0) + (Number(s30Input.value) || 0) + (Number(s50Input.value) || 0);
     const rest = total - sold;
     zbyvaInput.value = rest;
-    row.style.backgroundColor = rest === 0 ? '#e0e0e0' : '#fff';
+    sortCommittedRows(tbody);
     saveIfPossible();
   };
-
-  [qtyInput, bezInput, s30Input, s50Input].forEach(inp => {
-    inp.addEventListener('input', recalc);
-    inp.addEventListener('change', recalc);
-  });
-
-  // *** NOVÉ: uložení při změně expirace ***
+  [qtyInput, bezInput, s30Input, s50Input].forEach(inp => inp.addEventListener('input', recalc));
+  [qtyInput, bezInput, s30Input, s50Input].forEach(inp => inp.addEventListener('change', recalc));
   expiraceInput.addEventListener('change', saveIfPossible);
 
-  // koš – vyčistí řádek
   delBtn.addEventListener('click', () => {
     codeInput.value = '';
     nameInput.value = '';
@@ -272,7 +255,6 @@ function createRow(tbody, isEmpty = true) {
     s50Input.value = '';
     zbyvaInput.value = '';
     row.dataset.empty = 'true';
-    row.style.backgroundColor = '#fff';
     sortCommittedRows(tbody);
     ensureOneEmptyRow(tbody);
     saveIfPossible();
@@ -283,17 +265,45 @@ function createRow(tbody, isEmpty = true) {
   return row;
 }
 
-function commitRow(row, tbody) {
+function commitRow(row) {
   if (row.dataset.empty === 'false') return;
   const code = row.querySelector('.kod').value.trim();
   if (!code) return;
   row.dataset.empty = 'false';
 }
 
+// ====== NOVÉ ŘAZENÍ S ODDĚLOVACÍ ČÁROU A PRÁZDNÝM ŘÁDKEM ======
+function sortCommittedRows(tbody) {
+  const rows = [...tbody.querySelectorAll('tr')];
+  const committed = rows.filter(r => r.dataset.empty === 'false' && (Number(r.querySelector('.zbyva').value) || 0) > 0);
+  const zeros = rows.filter(r => r.dataset.empty === 'false' && (Number(r.querySelector('.zbyva').value) || 0) === 0);
+  const newEntry = rows.find(r => r.dataset.newEntry === 'true');
+
+  tbody.innerHTML = '';
+
+  committed.forEach(r => tbody.appendChild(r));
+
+  if (zeros.length) {
+    const sepRow = document.createElement('tr');
+    const sepTd = document.createElement('td');
+    sepTd.colSpan = 9;
+    sepTd.style.borderTop = '2px solid #ffd966';
+    sepTd.style.padding = '0';
+    sepTd.style.height = '10px';
+    sepRow.appendChild(sepTd);
+    tbody.appendChild(sepRow);
+  }
+
+  if (newEntry) tbody.appendChild(newEntry);
+
+  zeros.forEach(r => tbody.appendChild(r));
+}
+
 function ensureOneEmptyRow(tbody) {
-  const hasEmpty = [...tbody.querySelectorAll('tr')].some(r => r.dataset.empty === 'true');
-  if (!hasEmpty) {
-    createRow(tbody, true);
+  const existing = [...tbody.querySelectorAll('tr')].find(r => r.dataset.newEntry === 'true');
+  if (!existing) {
+    const newRow = createRow(tbody, true);
+    newRow.dataset.newEntry = 'true';
   }
 }
 
@@ -301,19 +311,4 @@ function focusLastEmptyCode(tbody) {
   const rows = [...tbody.querySelectorAll('tr')];
   const lastEmpty = rows.reverse().find(r => r.dataset.empty === 'true');
   if (lastEmpty) lastEmpty.querySelector('.kod').focus();
-}
-
-function sortCommittedRows(tbody) {
-  const rows = [...tbody.querySelectorAll('tr')];
-  const committed = rows.filter(r => r.dataset.empty === 'false');
-  const empty = rows.filter(r => r.dataset.empty === 'true');
-
-  committed.sort((a, b) => {
-    const aCode = a.querySelector('.kod').value.trim();
-    const bCode = b.querySelector('.kod').value.trim();
-    return aCode.localeCompare(bCode, undefined, { numeric: true });
-  });
-
-  [...committed, ...empty].forEach(r => tbody.appendChild(r));
-
 }
