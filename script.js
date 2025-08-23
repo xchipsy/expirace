@@ -287,9 +287,9 @@ function sortCommittedRows(tbody) {
     const sepRow = document.createElement('tr');
     const sepTd = document.createElement('td');
     sepTd.colSpan = 9;
-    sepTd.style.borderTop = '2px solid #ffd966';
+    sepTd.style.borderTop = '10px solid #ffd966';
     sepTd.style.padding = '0';
-    sepTd.style.height = '10px';
+    sepTd.style.height = '5px';
     sepRow.appendChild(sepTd);
     tbody.appendChild(sepRow);
   }
@@ -312,3 +312,4 @@ function focusLastEmptyCode(tbody) {
   const lastEmpty = rows.reverse().find(r => r.dataset.empty === 'true');
   if (lastEmpty) lastEmpty.querySelector('.kod').focus();
 }
+
